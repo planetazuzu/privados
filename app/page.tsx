@@ -284,10 +284,10 @@ export default function EmergencyForm() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || isResendLoading || isEmailLoading}
+                  disabled={isSubmitting || isResendLoading}
                   className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg"
                 >
-                  {isSubmitting || isResendLoading || isEmailLoading ? "Procesando..." : isOnline ? "📧 Enviar Formulario" : "💾 Guardar Offline"}
+                  {isSubmitting || isResendLoading ? "Procesando..." : isOnline ? "📧 Enviar Formulario" : "💾 Guardar Offline"}
                 </Button>
 
                 <Button
