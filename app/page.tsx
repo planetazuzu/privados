@@ -18,7 +18,6 @@ import ConnectionStatus from "@/components/ConnectionStatus"
 import { saveFormData, loadFormData, clearFormData, savePendingForm } from "@/utils/offlineStorage"
 import PendingForms from "@/components/PendingForms"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
-import { useEmailSender } from "@/hooks/useEmailSender"
 import { useResendEmail } from "@/hooks/useResendEmail"
 
 export default function EmergencyForm() {
@@ -26,7 +25,6 @@ export default function EmergencyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { isOnline } = useOffline()
   const { isSupported, subscribe } = usePushNotifications()
-  const { sendFormByEmailClient, isLoading: isEmailLoading } = useEmailSender()
   const { sendFormByResend, isLoading: isResendLoading } = useResendEmail()
 
   const [formData, setFormData] = useState<FormData>({
@@ -156,48 +154,24 @@ export default function EmergencyForm() {
           })
           clearFormData()
         } catch (resendError: any) {
-          // Si falla Resend, intentar con EmailJS (sin adjuntos)
-          try {
-            await sendFormByEmailClient(excelBuffer, formData)
-            
-            // Descargar Excel como backup
-            const blob = new Blob([excelBuffer], {
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
+          // Si falla Resend, solo descargar localmente
+          const blob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
 
-            toast({
-              title: "✅ Enviado por método alternativo",
-              description: `Email enviado sin adjuntos. Excel descargado localmente.`,
-            })
-            clearFormData()
-          } catch (emailError: any) {
-            // Si fallan ambos, al menos descargar
-            const blob = new Blob([excelBuffer], {
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
-
-            toast({
-              title: "⚠️ Descargado localmente",
-              description: `No se pudo enviar por email. Excel descargado correctamente. Errores: ${resendError.message}, ${emailError.message}`,
-              variant: "destructive",
-            })
-          }
+          toast({
+            title: "⚠️ Email no disponible - Descargado localmente",
+            description: `No se pudo enviar por email. Excel descargado correctamente. Error: ${resendError.message}`,
+            variant: "destructive",
+          })
         }
       } else {
         savePendingForm(formData)
