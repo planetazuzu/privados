@@ -5,7 +5,7 @@
 - ✅ Node.js 18+ instalado
 - ✅ pnpm o npm instalado
 - ✅ Git configurado
-- ✅ Credenciales de email (Resend/EmailJS)
+- ✅ **EmailJS eliminado** (sin dependencias problemáticas) ✨
 
 ---
 
@@ -32,16 +32,20 @@ git push -u origin main
 1. Ve a https://vercel.com
 2. Conecta tu cuenta GitHub
 3. Importa tu repositorio
-4. Configura variables de entorno:
-   - `NEXT_PUBLIC_EMAILJS_SERVICE_ID`
-   - `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID`  
-   - `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY`
-   - `RESEND_API_KEY`
-   - `EMERGENCY_EMAIL`
-   - `ADMIN_PASSWORD`
-5. Deploy automático ✅
+4. **¡Deploy automático sin configuración adicional!** ✅
+   - No necesitas configurar EmailJS (eliminado)
+   - Resend es opcional (si quieres emails automáticos)
+   - Todo funciona sin configuración externa
 
 **URL final: https://tu-proyecto.vercel.app**
+
+#### 📧 Configuración de Email (Opcional)
+Si quieres habilitar el envío automático de emails:
+1. Ve a tu proyecto en Vercel → Settings → Environment Variables
+2. Añade: `RESEND_API_KEY` = tu_clave_de_resend
+3. Añade: `EMERGENCY_EMAIL` = email_destino@ejemplo.com
+
+**Nota:** Sin estas variables, la app funciona perfectamente y solo descarga los Excel localmente.
 
 ---
 
@@ -153,27 +157,6 @@ server {
 
 ---
 
-## 🔧 CONFIGURACIÓN DE SERVICIOS
-
-### EmailJS
-1. Ve a https://www.emailjs.com/
-2. Crea cuenta y servicio
-3. Configura template con variables:
-   - `{{to_email}}`
-   - `{{subject}}`
-   - `{{message}}`
-   - `{{servicio}}`
-   - `{{fecha}}`
-   - `{{paciente}}`
-
-### Resend
-1. Ve a https://resend.com/
-2. Crea cuenta
-3. Obtén API key
-4. (Opcional) Verifica tu dominio
-
----
-
 ## 🔒 HTTPS Y DOMINIO
 
 ### Para Vercel/Netlify
@@ -199,11 +182,12 @@ sudo crontab -e
 
 1. **Aplicación carga** → ✅
 2. **Formulario funciona** → ✅  
-3. **Email se envía** → ✅
-4. **Excel se descarga** → ✅
-5. **Panel admin accesible** → ✅
-6. **PWA instalable** → ✅
-7. **Funciona offline** → ✅
+3. **Excel se genera y descarga** → ✅
+4. **Panel admin accesible** → ✅
+5. **PWA instalable** → ✅
+6. **Funciona offline** → ✅
+7. **EmailJS eliminado** → ✅ (sin errores de template)
+8. **Resend opcional** → ⚠️ (configurable si quieres emails)
 
 ---
 

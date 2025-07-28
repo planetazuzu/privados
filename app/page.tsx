@@ -18,14 +18,12 @@ import ConnectionStatus from "@/components/ConnectionStatus"
 import { saveFormData, loadFormData, clearFormData, savePendingForm } from "@/utils/offlineStorage"
 import PendingForms from "@/components/PendingForms"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
-import { useResendEmail } from "@/hooks/useResendEmail"
 
 export default function EmergencyForm() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { isOnline } = useOffline()
   const { isSupported, subscribe } = usePushNotifications()
-  const { sendFormByResend, isLoading: isResendLoading } = useResendEmail()
 
   const [formData, setFormData] = useState<FormData>({
     fecha: "",
@@ -128,56 +126,30 @@ export default function EmergencyForm() {
 
     try {
       if (isOnline) {
-        // Generar Excel
+        // Generar y descargar Excel directamente
         const excelBuffer = generateExcel(formData)
-        
-        try {
-          // Intentar envío por Resend primero (con archivos adjuntos)
-          const resendResult = await sendFormByResend(excelBuffer, formData)
-          
-          // También descargar como backup
-          const blob = new Blob([excelBuffer], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          })
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement("a")
-          a.href = url
-          a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
-          URL.revokeObjectURL(url)
+        const blob = new Blob([excelBuffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
 
-          toast({
-            title: "✅ Formulario enviado y descargado",
-            description: `Formulario ${formData.numeroServicio} enviado por email con Excel adjunto y descargado como backup`,
-          })
-          clearFormData()
-        } catch (resendError: any) {
-          // Si falla Resend, solo descargar localmente
-          const blob = new Blob([excelBuffer], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          })
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement("a")
-          a.href = url
-          a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
-          URL.revokeObjectURL(url)
-
-          toast({
-            title: "⚠️ Email no disponible - Descargado localmente",
-            description: `No se pudo enviar por email. Excel descargado correctamente. Error: ${resendError.message}`,
-            variant: "destructive",
-          })
-        }
+        toast({
+          title: "✅ Formulario procesado y descargado",
+          description: `Formulario ${formData.numeroServicio} guardado como Excel. Archivo descargado correctamente.`,
+        })
+        clearFormData()
       } else {
         savePendingForm(formData)
         toast({
           title: "💾 Guardado offline",
-          description: "El formulario se enviará automáticamente cuando vuelva la conexión",
+          description: "El formulario se procesará automáticamente cuando vuelva la conexión",
         })
       }
 
@@ -205,8 +177,8 @@ export default function EmergencyForm() {
     } catch (error: any) {
       savePendingForm(formData)
       toast({
-        title: "⚠️ Error de envío",
-        description: "El formulario se ha guardado y se enviará cuando sea posible",
+        title: "⚠️ Error de procesamiento",
+        description: "El formulario se ha guardado y se procesará cuando sea posible",
         variant: "destructive",
       })
     } finally {
@@ -284,10 +256,10 @@ export default function EmergencyForm() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || isResendLoading}
+                  disabled={isSubmitting}
                   className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg"
                 >
-                  {isSubmitting || isResendLoading ? "Procesando..." : isOnline ? "📧 Enviar Formulario" : "💾 Guardar Offline"}
+                  {isSubmitting ? "Procesando..." : isOnline ? "� Procesar Formulario" : "💾 Guardar Offline"}
                 </Button>
 
                 <Button

@@ -7,9 +7,6 @@ import { Toaster } from "@/components/ui/toaster"
 import NotificationManager from "@/components/NotificationManager"
 import NotificationTester from "@/components/NotificationTester"
 import NotificationStats from "@/components/NotificationStats"
-import EmailTester from "@/components/EmailTester"
-import EmailSystemDiagnostic from "@/components/EmailSystemDiagnostic"
-import ConfigVerifier from "@/components/ConfigVerifier"
 import PWAStatus from "@/components/PWAStatus"
 import AdminLogin from "@/components/AdminLogin"
 import { Shield, LogOut } from "lucide-react"
@@ -104,9 +101,6 @@ export default function AdminPage() {
 
         <div className="space-y-6">
           <PWAStatus />
-          <EmailSystemDiagnostic />
-          <ConfigVerifier />
-          <EmailTester />
           <NotificationManager />
           <NotificationTester />
           <NotificationStats />
