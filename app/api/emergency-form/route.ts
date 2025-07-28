@@ -70,7 +70,9 @@ async function sendFormByEmail(excelBuffer: ArrayBuffer, formData: FormData) {
 
 export async function POST(request: NextRequest) {
   try {
-    const formData: FormData = await request.json()
+    const body = await request.json()
+    const formData: FormData = body
+    const excelBase64 = body.excelBase64 // Opcional: Excel ya convertido desde el frontend
 
     // Validar solo campos esenciales
     const requiredFields = [
@@ -90,10 +92,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Debe especificar al menos la dirección de origen o destino" }, { status: 400 })
     }
 
-    // Generar Excel
-    const excelBuffer = generateExcel(formData)
+    // Generar Excel (usar el del frontend si está disponible, sino generarlo aquí)
+    const excelBuffer = excelBase64 
+      ? Buffer.from(excelBase64, 'base64').buffer as ArrayBuffer
+      : generateExcel(formData)
 
-    // Enviar por email
+    // Intentar envío por email
     const emailResult = await sendFormByEmail(excelBuffer, formData)
 
     // Enviar notificación de éxito (solo si está configurado)
@@ -105,14 +109,15 @@ export async function POST(request: NextRequest) {
 
     const response: any = {
       success: true,
+      emailSent: !emailResult.skipped,
       message: emailResult.skipped 
         ? "Formulario procesado correctamente. Email no enviado (RESEND_API_KEY no configurado)" 
-        : "Formulario enviado correctamente",
+        : "Formulario enviado correctamente por email",
       numeroServicio: formData.numeroServicio,
     }
 
     if (!emailResult.skipped) {
-      response.emailMessageId = emailResult.messageId
+      response.messageId = emailResult.messageId
     } else {
       response.emailSkippedReason = emailResult.reason
     }
@@ -120,6 +125,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(response)
   } catch (error: any) {
     console.error("Error procesando formulario:", error)
-    return NextResponse.json({ error: error.message || "Error interno del servidor" }, { status: 500 })
+    return NextResponse.json({ 
+      error: error.message || "Error interno del servidor",
+      success: false,
+      emailSent: false 
+    }, { status: 500 })
   }
 }
