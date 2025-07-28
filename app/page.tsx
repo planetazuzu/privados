@@ -18,12 +18,14 @@ import ConnectionStatus from "@/components/ConnectionStatus"
 import { saveFormData, loadFormData, clearFormData, savePendingForm } from "@/utils/offlineStorage"
 import PendingForms from "@/components/PendingForms"
 import { usePushNotifications } from "@/hooks/usePushNotifications"
+import { useResendEmail } from "@/hooks/useResendEmail"
 
 export default function EmergencyForm() {
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { isOnline } = useOffline()
   const { isSupported, subscribe } = usePushNotifications()
+  const { sendFormByResend, isLoading: isResendLoading } = useResendEmail()
 
   const [formData, setFormData] = useState<FormData>({
     fecha: "",
@@ -126,25 +128,51 @@ export default function EmergencyForm() {
 
     try {
       if (isOnline) {
-        // Generar y descargar Excel directamente
+        // Generar Excel
         const excelBuffer = generateExcel(formData)
-        const blob = new Blob([excelBuffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement("a")
-        a.href = url
-        a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
+        
+        try {
+          // Intentar envío por Resend usando el hook
+          await sendFormByResend(excelBuffer, formData)
 
-        toast({
-          title: "✅ Formulario procesado y descargado",
-          description: `Formulario ${formData.numeroServicio} guardado como Excel. Archivo descargado correctamente.`,
-        })
-        clearFormData()
+          // También descargar como backup
+          const blob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+
+          toast({
+            title: "✅ Formulario enviado y descargado",
+            description: `Formulario ${formData.numeroServicio} enviado por email con Excel adjunto y descargado como backup`,
+          })
+          clearFormData()
+        } catch (resendError: any) {
+          // Si falla el envío, solo descargar localmente
+          const blob = new Blob([excelBuffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `emergencia_${formData.numeroServicio}_${new Date().toISOString().split("T")[0]}.xlsx`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+
+          toast({
+            title: "⚠️ Email no disponible - Descargado localmente",
+            description: `No se pudo enviar por email. Excel descargado correctamente. Error: ${resendError.message}`,
+            variant: "destructive",
+          })
+        }
       } else {
         savePendingForm(formData)
         toast({
@@ -256,7 +284,7 @@ export default function EmergencyForm() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isResendLoading}
                   className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg"
                 >
                   {isSubmitting ? "Procesando..." : isOnline ? "� Procesar Formulario" : "💾 Guardar Offline"}
