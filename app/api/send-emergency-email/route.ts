@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Verificar que la API key esté presente antes de inicializar
+const resendApiKey = process.env.RESEND_API_KEY
+if (!resendApiKey) {
+  console.warn("RESEND_API_KEY no configurada - el envío de emails fallará")
+}
+
+const resend = resendApiKey ? new Resend(resendApiKey) : null
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar si Resend está disponible
+    if (!resend) {
+      return NextResponse.json(
+        { error: "Servicio de email no configurado", code: "RESEND_NOT_CONFIGURED" },
+        { status: 503 }
+      )
+    }
+
     const { formData, excelBase64 } = await request.json()
 
     const emailContent = `

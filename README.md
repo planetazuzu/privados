@@ -1,17 +1,25 @@
-# Sistema de Emergencias Sanitarias
+# 🚑 Sistema de Emergencias Sanitarias
 
-Aplicación web para la recogida de datos en emergencias sanitarias, compatible con Vercel.
+Aplicación web progresiva (PWA) para la gestión de formularios de emergencias sanitarias con funcionalidad offline completa.
 
-## Características
+## ✨ Características Principales
 
+### 📝 Sistema de Formularios
 - ✅ Formulario dividido en secciones organizadas
+- ✅ Validación en tiempo real de campos obligatorios
+- ✅ Interfaz responsiva optimizada para tablets y móviles
+- ✅ Guardado automático mientras escribes
+
+### 📧 Sistema Híbrido de Envío
+- ✅ **Resend** (principal) - Con archivos Excel adjuntos
+- ✅ **EmailJS** (respaldo) - Cuando Resend no está disponible
+- ✅ **Descarga local** - Como último recurso siempre disponible
+- ✅ Reintentos automáticos con diferentes métodos
+
+### 📊 Gestión de Datos
 - ✅ Generación automática de archivos Excel (.xlsx)
-- ✅ Envío por email usando EmailJS
-- ✅ Descarga local como backup
-- ✅ Validación de campos obligatorios
-- ✅ Interfaz responsiva con TailwindCSS
-- ✅ Compatible con tablets y móviles
-- ✅ Almacenamiento local para funcionalidad offline
+- ✅ Exportación de datos completa
+- ✅ Almacenamiento local seguro
 
 ## 🚀 **Funcionalidades PWA**
 
@@ -89,8 +97,122 @@ Aplicación web para la recogida de datos en emergencias sanitarias, compatible 
 ### **1. Claves VAPID Configuradas:**
 \`\`\`bash
 # ✅ Claves ya configuradas en el proyecto
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=BAzvU8j4w9S0XxQhXK9K6rJZT6slE9JhN6Hxf6iF59fQYaA_9nH0PZK0eUcIUXm8vFqhLUiwPq8G8PMePpYQQF8
-VAPID_PRIVATE_KEY=HXZfAjEiVgF1wVqQbshzKj3n9kdrQv6GHX9aRkBdPuY
+## 🛠️ Instalación y Configuración
+
+### Prerrequisitos
+- Node.js 18+ 
+- pnpm (recomendado) o npm
+
+### Instalación Local
+```bash
+# Clonar el repositorio
+git clone [URL-DEL-REPOSITORIO]
+cd emergency-form
+
+# Instalar dependencias
+pnpm install
+
+# Configurar variables de entorno
+cp .env.example .env.local
+# Editar .env.local con tus credenciales
+
+# Ejecutar en desarrollo
+pnpm dev
+```
+
+### Variables de Entorno Requeridas
+```env
+# Sistema de Email Principal (Resend)
+RESEND_API_KEY=tu_api_key_resend
+
+# Sistema de Email Secundario (EmailJS)
+NEXT_PUBLIC_EMAILJS_SERVICE_ID=tu_service_id
+NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=tu_template_id
+NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=tu_public_key
+
+# Autenticación Admin
+ADMIN_PASSWORD=tu_password_admin
+
+# Notificaciones Push (Opcional)
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=tu_vapid_public_key
+VAPID_PRIVATE_KEY=tu_vapid_private_key
+```
+
+## 🚀 Despliegue
+
+### Opción 1: Vercel (Recomendado)
+1. Fork/clona este repositorio
+2. Conecta tu cuenta de Vercel con GitHub
+3. Importa el proyecto en Vercel
+4. Configura las variables de entorno
+5. Despliega automáticamente
+
+### Opción 2: Netlify
+1. Build command: `pnpm build`
+2. Publish directory: `.next`
+3. Configura variables de entorno
+
+### Opción 3: VPS/Servidor Propio
+```bash
+# Construir para producción
+pnpm build
+
+# Iniciar servidor
+pnpm start
+```
+
+## 📱 Uso
+
+1. **Formulario Principal**: Completa todas las secciones obligatorias
+2. **Envío Automático**: El sistema intentará enviar por email automáticamente
+3. **Respaldo Local**: Siempre disponible la opción de descarga Excel
+4. **Modo Offline**: Los formularios se guardan automáticamente offline
+5. **Panel Admin**: Acceso a estadísticas y configuración (ruta `/admin`)
+
+## 🏗️ Estructura del Proyecto
+
+```
+emergency-form/
+├── app/                      # App Router (Next.js 14)
+│   ├── page.tsx             # Formulario principal
+│   ├── layout.tsx           # Layout base con PWA
+│   ├── admin/               # Panel de administración
+│   └── api/                 # API Routes
+│       ├── send-emergency-email/  # Envío con Resend
+│       ├── admin/           # Autenticación
+│       └── notifications/   # Sistema de notificaciones
+├── components/              # Componentes React
+│   ├── AdminLogin.tsx       # Autenticación
+│   ├── PWAInstallPrompt.tsx # Instalación PWA
+│   ├── ConnectionStatus.tsx # Estado de conexión
+│   ├── form-sections/       # Secciones del formulario
+│   └── ui/                  # Componentes shadcn/ui
+├── hooks/                   # Custom hooks
+│   ├── useResendEmail.ts    # Email con Resend
+│   ├── useEmailJS.ts        # Email con EmailJS
+│   ├── useOffline.ts        # Detección offline
+│   └── usePushNotifications.ts # Notificaciones
+├── types/                   # Tipos TypeScript
+├── utils/                   # Utilidades
+│   ├── excelUtils.ts        # Generación Excel
+│   └── offlineStorage.ts    # Almacenamiento offline
+├── public/                  # Archivos estáticos PWA
+│   ├── manifest.json        # Manifiesto PWA
+│   ├── sw.js               # Service Worker
+│   └── icons/              # Iconos PWA
+└── scripts/                # Scripts de utilidad
+```
+
+## 🔧 Tecnologías Utilizadas
+
+- **Frontend**: Next.js 14, React 18, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui
+- **Email**: Resend, EmailJS
+- **Excel**: SheetJS (xlsx)
+- **PWA**: Service Worker, Web App Manifest
+- **Offline**: IndexedDB, LocalStorage
+- **Notifications**: Web Push API
+- **Build**: pnpm, Turbopack
 \`\`\`
 
 ### **2. Configuración en Vercel:**
