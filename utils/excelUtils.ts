@@ -108,7 +108,10 @@ export function generateExcel(data: FormData): ArrayBuffer {
 // Función para enviar notificación después del envío exitoso
 export async function sendSuccessNotification(formData: FormData): Promise<void> {
   try {
-    await fetch("/api/notifications/send", {
+    // Construir URL completa para que funcione en el servidor
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    
+    await fetch(`${baseUrl}/api/notifications/send`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

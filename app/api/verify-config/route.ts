@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
-import { verifyEmailConfig } from "@/app/actions/emailActions"
 
 export async function GET() {
   try {
-    const emailVerification = await verifyEmailConfig()
+    // Verificar configuración de Resend
+    const resendConfig = {
+      success: !!process.env.RESEND_API_KEY,
+      configured: !!process.env.RESEND_API_KEY,
+      error: !process.env.RESEND_API_KEY ? "RESEND_API_KEY no configurado" : undefined,
+    }
 
     const vapidConfig = {
       publicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? "Configurada" : "No configurada",
@@ -11,9 +15,9 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      success: true,
+      success: !!process.env.RESEND_API_KEY,
       timestamp: new Date().toISOString(),
-      email: emailVerification,
+      resend: resendConfig,
       vapid: vapidConfig,
       environment: {
         nodeEnv: process.env.NODE_ENV,
