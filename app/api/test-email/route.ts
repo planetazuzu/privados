@@ -1,19 +1,27 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { Resend } from "resend"
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
     const { to, subject, message } = await request.json()
 
     if (!process.env.RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY no configurado")
+      return NextResponse.json({
+        success: false,
+        error: "RESEND_API_KEY no configurado",
+        message: "Para enviar emails de prueba, configura RESEND_API_KEY en las variables de entorno",
+      }, { status: 400 })
     }
 
     if (!to) {
-      throw new Error("Email de destino es requerido")
+      return NextResponse.json({
+        success: false,
+        error: "Email de destino es requerido"
+      }, { status: 400 })
     }
+
+    // Importar Resend dinámicamente
+    const { Resend } = await import("resend")
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     const result = await resend.emails.send({
       from: "Emergency Form <onboarding@resend.dev>",
@@ -41,6 +49,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error("Error enviando email de prueba:", error)
-    return NextResponse.json({ error: error.message || "Error enviando email de prueba" }, { status: 500 })
+    return NextResponse.json({ 
+      success: false,
+      error: error.message || "Error enviando email de prueba" 
+    }, { status: 500 })
   }
 }
