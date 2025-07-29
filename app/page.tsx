@@ -149,7 +149,7 @@ export default function EmergencyForm() {
           URL.revokeObjectURL(url)
 
           toast({
-            title: "✅ Formulario enviado y descargado",
+            title: "✅ Email enviado correctamente",
             description: `Formulario ${formData.numeroServicio} enviado por email con Excel adjunto y descargado como backup`,
           })
           clearFormData()
@@ -168,7 +168,7 @@ export default function EmergencyForm() {
           URL.revokeObjectURL(url)
 
           toast({
-            title: "⚠️ Email no disponible - Descargado localmente",
+            title: "⚠️ Email no disponible - Guardado localmente",
             description: `No se pudo enviar por email. Excel descargado correctamente. Error: ${resendError.message}`,
             variant: "destructive",
           })
@@ -177,7 +177,7 @@ export default function EmergencyForm() {
         savePendingForm(formData)
         toast({
           title: "💾 Guardado offline",
-          description: "El formulario se procesará automáticamente cuando vuelva la conexión",
+          description: "El formulario se enviará automáticamente por email cuando vuelva la conexión",
         })
       }
 
@@ -205,8 +205,8 @@ export default function EmergencyForm() {
     } catch (error: any) {
       savePendingForm(formData)
       toast({
-        title: "⚠️ Error de procesamiento",
-        description: "El formulario se ha guardado y se procesará cuando sea posible",
+        title: "⚠️ Error de envío",
+        description: "El formulario se ha guardado y se enviará cuando sea posible",
         variant: "destructive",
       })
     } finally {
@@ -287,7 +287,7 @@ export default function EmergencyForm() {
                   disabled={isSubmitting || isResendLoading}
                   className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg"
                 >
-                  {isSubmitting ? "Procesando..." : isOnline ? "� Procesar Formulario" : "💾 Guardar Offline"}
+                  {isSubmitting ? "Enviando..." : isOnline ? "📧 Enviar Email" : "💾 Guardar Offline"}
                 </Button>
 
                 <Button
